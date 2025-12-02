@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chat</title>
+<style>
+:root{
+  --bg:#111b21;--hdr:#202c33;--chat:#0b141a;--sent:#005c4b;--rcv:#202c33;
+  --txt:#e9edef;--sub:#8696a0;--acc:#00a884;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;user-select:none;touch-action:pan-y;}
+html,body{height:100%;width:100%;overflow:hidden;position:fixed;background:var(--bg);}
+.phone-container{width:100%;height:100%;max-width:450px;margin:auto;background:var(--chat);display:flex;flex-direction:column;}
+header{background:var(--hdr);padding:10px 14px;display:flex;align-items:center;color:var(--txt);}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;margin-right:12px;}
+.user-info h4{font-size:16px;}
+#status{font-size:12px;color:var(--sub);}
+.chat-area{flex:1;padding:18px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;scrollbar-width:none;}
+.chat-area::-webkit-scrollbar{display:none;}
+.message{padding:8px 12px;border-radius:9px;font-size:14px;line-height:1.4;color:var(--txt);animation:fadeIn .25s ease;box-shadow:0 1px .5px rgba(0,0,0,0.15);}
+.sent{align-self:flex-end;background:var(--sent);}
+.received{align-self:flex-start;background:var(--rcv);}
+.replay-box{background:var(--hdr);padding:10px;display:flex;align-items:center;border-top:1px solid rgba(255,255,255,0.1);}
+.replay-box input{flex:1;padding:11px 14px;border-radius:20px;border:none;background:#2a3942;color:var(--txt);outline:none;font-size:15px;}
+.replay-box button{width:40px;height:40px;border-radius:50%;border:none;background:var(--acc);color:#fff;font-size:18px;margin-left:10px;cursor:pointer;}
+.replay-box button:active{transform:scale(.88);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+
+<div class="phone-container">
+<header>
+  <div class="avatar">A</div>
+  <div class="user-info">
+    <h4>Ambrin</h4>
+    <p id="status">online</p>
+  </div>
+</header>
+
+<!-- ✅ LOAD BAR ADDED, NOTHING ELSE CHANGED -->
+<div class="w-full h-[3px] bg-gray-700 overflow-hidden">
+  <div class="h-full w-1/3 bg-emerald-400 animate-[progress_1.2s_linear_infinite] origin-left"></div>
+</div>
+
+<style>
+@keyframes progress {
+  0% { transform: translateX(-100%) scaleX(1); }
+  50% { transform: translateX(0%) scaleX(1.8); }
+  100% { transform: translateX(100%) scaleX(1); }
+}
+</style>
+
+<div class="chat-area" id="chatArea">
+  <div class="message received">Hey moon girl, it's ok .</div>
+  <div class="message received">I didn’t say much back then, but I saw every word.</div>
+  <div class="message received">I use grammarly for correction, not ChatGPT. 🌙</div>
+  <div class="message received">I’m glad I could convey my wish, even quietly.</div>
+  <div class="message received">Bye, take care.</div>
+  <div class="message received">Assalamualaikum 🌙✨</div>
+  <div class="message received" style="max-width:90%;align-self:center;text-align:center;">
+    This is a static page, not connected to me.
+  </div>
+</div>
+
+<div class="replay-box">
+  <input type="text" placeholder="Reply…" id="replyInput" autocomplete="off">
+  <button id="replyBtn">➤</button>
+</div>
+
+</div>
+
+<script src="audio.js"></script>
+<script>
+document.getElementById("replyBtn").onclick = function(){
+  const r = document.getElementById("replyInput").value.trim();
+  if(!r) return;
+  const div = document.createElement("div");
+  div.className = "message sent";
+  div.innerHTML = r + `<span class='timestamp'>${(new Date()).toLocaleTimeString()}</span>`;
+  document.getElementById("chatArea").appendChild(div);
+  document.getElementById("replyInput").value = "";
+};
+</script>
+
+</body>
+</html>

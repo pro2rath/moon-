@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moon Princess Birthday</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@300;500;700&family=Cinzel:wght@400;700&display=swap');
+
+    body {
+      margin: 0;
+      background-color: #050510;
+      color: white;
+      font-family: 'Quicksand', sans-serif;
+      overflow-x: hidden;
+    }
+
+    #star-bg {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 30%, #1a1a2e 0%, #000000 80%);
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%,100%{opacity:0.3;}
+      50%{opacity:1;}
+    }
+
+    .moon-glow {
+      box-shadow: 0 0 40px 5px rgba(167,139,250,0.4);
+      animation: pulse 3s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from{box-shadow:0 0 30px rgba(167,139,250,0.3);}
+      to{box-shadow:0 0 60px rgba(167,139,250,0.6);}
+    }
+
+    #heart-container {
+      width: 100%;
+      height: 500px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-left: 0; border-right: 0;
+    }
+
+    .greeting-card {
+      position: absolute;
+      top: 50%;
+      width: 220px;
+      padding: 14px;
+      background: rgba(255,255,255,1);
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(168,85,247,0.8);
+      z-index: 50;
+      opacity: 1;
+      text-align: center;
+      transform: translateY(-50%);
+      animation: floatIn 0.6s cubic-bezier(.17,.89,.32,1.27) forwards;
+    }
+
+    .greeting-card.right { right: 5%; }
+    .greeting-card.left { left: 5%; }
+
+    .greeting-card.fade-out-down {
+      animation: fadeD 0.5s ease-in forwards !important;
+    }
+
+    @keyframes floatIn {
+      0%{opacity:0;transform:translateY(-70%) scale(.6);}
+      100%{opacity:1;transform:translateY(-50%) scale(1);}
+    }
+
+    @keyframes fadeD {
+      0%{opacity:1;transform:translateY(-50%) scale(1);}
+      100%{opacity:0;transform:translateY(50px) scale(.8);}
+    }
+
+    @media (max-width:600px) {
+      .greeting-card{width:160px;padding:10px;}
+      .greeting-card.right{right:2%;}
+      .greeting-card.left{left:2%;}
+    }
+
+    .greeting-card img {
+      width:100%;
+      height:120px;
+      object-fit:cover;
+      border-radius:12px;
+      margin:8px auto;
+      border:3px solid #a855f7;
+      box-shadow:0 0 18px rgba(168,85,247,0.6);
+    }
+
+    .greeting-card h3 {
+      font-family:'Cinzel', serif;
+      font-weight:700;
+      color:#6b21a8;
+      font-size:1.35rem;
+      margin-bottom:6px;
+    }
+
+    .greeting-card p {
+      font-family:'Dancing Script', cursive;
+      font-weight:700;
+      color:#4c1d95;
+      font-size:1.2rem;
+      line-height:1.3;
+    }
+
+    .memory-card {
+      background:white;padding:10px 10px 30px 10px;
+      transform:rotate(-2deg);transition:.3s;
+      box-shadow:0 5px 15px rgba(0,0,0,0.7);
+    }
+    .memory-card:nth-child(even){transform:rotate(2deg);}
+    .memory-card:hover{transform:scale(1.05) rotate(0deg)!important;z-index:10;}
+
+    .memory-img{width:100%;height:250px;object-fit:cover;background:#222;border-radius:6px;}
+
+    .goto-btn {
+      margin-top:10px;
+      padding:8px 14px;
+      background:var(--acc);
+      color:#fff;
+      border:none;
+      border-radius:18px;
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      align-self:flex-end;
+    }
+    .goto-btn:active {
+      transform:scale(0.9);
+    }
+
+</style>
+</head>
+
+<body>
+
+  <div id="star-bg"></div>
+
+  <audio id="bg-music" src="perfect.mp3" loop></audio>
+
+  <div class="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center pb-20">
+
+    <header class="text-center mt-12 mb-6 px-4">
+      <h1 class="text-5xl md:text-7xl font-['Dancing_Script'] bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-pink-200 to-indigo-300">
+        Happy Birthday<br>Moon Princess
+      </h1>
+    </header>
+
+    <div class="relative mb-10 group">
+      <div class="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 blur opacity-50 group-hover:opacity-80"></div>
+      <img src="images/me.jpg"
+           onerror="this.src='https://placehold.co/400x400/2a2a4a/e9d5ff?text=Princess.png'"
+           alt="Princess"
+           class="relative w-48 h-48 md:w-64 md:h-64 object-cover rounded-full border-4 border-purple-200 moon-glow">
+    </div>
+
+    <div class="text-center max-w-lg px-6 mb-16">
+      <p class="text-xl md:text-2xl text-purple-100 font-light italic">
+Happy Birthday, . 🌙
+You’re like the moon — peaceful, real, and naturally beautiful.
+You don’t need to be loud to shine, your presence itself brings light.
+
+I admire how steady you are,
+how calm you stay,
+and how special you feel without even trying.
+
+Hope your life keeps glowing in all your dreams,
+and keeps rising in every phase.
+
+Stay you. That’s your superpower.
+
+Have the best year ahead. 🌙✨      </p>
+    </div>
+
+    <div class="w-full mb-3 text-center text-purple-300 opacity-70 text-sm animate-pulse tracking-widest uppercase">
+      Tap left or right on the crystal heart
+    </div>
+
+    <div id="heart-container"></div>
+
+    <section id="memories-section" class="w-full px-6 pt-10">
+      <h2 class="text-center text-3xl font-['Cinzel'] text-purple-200 mb-10 border-b border-purple-900/50 pb-4 max-w-md mx-auto tracking-widest uppercase">
+        Golden Memories
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+
+        <div class="memory-card">
+          <img src="images/pic0.jpg" onerror="this.src='https://placehold.co/400x500/1e1b4b/fff?text=pic2.png'" class="memory-img" alt="">
+          <div class="text-gray-900 opacity-80 text-center font-['Dancing_Script'] text-2xl pt-4">Cherished moment</div>
+        </div>
+
+        <div class="memory-card">
+          <img src="images/pic3.jpg" onerror="this.src='https://placehold.co/400x500/312e81/fff?text=pic3.png'" class="memory-img" alt="">
+          <div class="text-gray-900 opacity-80 text-center font-['Dancing_Script'] text-2xl pt-4">Pure happiness</div>
+        </div>
+
+        <div class="memory-card">
+          <img src="images/pic2.jpg" onerror="this.src='https://placehold.co/400x500/4c1d95/fff?text=pic4.png'" class="memory-img" alt="">
+          <div class="text-gray-900 opacity-80 text-center font-['Dancing_Script'] text-2xl pt-4">unbilivable time</div>
+        </div>
+
+        <!-- <div class="memory-card">
+          <img src="pic5.png" onerror="this.src='https://placehold.co/400x500/701a75/fff?text=pic5.png'" class="memory-img" alt="">
+          <div class="text-gray-900 opacity-80 text-center font-['Dancing_Script'] text-2xl pt-4">Forever shining</div>
+        </div> -->
+
+      </div>
+
+       <button onclick="location.href='final1.html'" class="goto-btn">Go to final1.html ➜</button>
+    
+    </section>
+
+    <footer class="mt-20 text-purple-400/40 text-sm">Made with stardust & love</footer>
+  </div>
+
+
+  <script>
+    // stars
+    const starBg = document.getElementById("star-bg");
+    for(let i=0;i<150;i++){
+      const s=document.createElement("div");
+      s.className="star";
+      const z=Math.random()*2+1;
+      s.style.width=z+"px";
+      s.style.height=z+"px";
+      s.style.left=Math.random()*100+"%";
+      s.style.top=Math.random()*100+"%";
+      s.style.animationDelay=Math.random()*5+"s";
+      starBg.appendChild(s);
+    }
+
+    // 3D heart
+    const container = document.getElementById("heart-container");
+    let scene,camera,renderer,heartMesh;
+
+    function initThree(){
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(50,w/h,0.1,1000);
+      camera.position.z = 20;
+      renderer = new THREE.WebGLRenderer({alpha:true,antialias:true});
+      renderer.setSize(w,h);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0x404040,1.5));
+      const d=new THREE.DirectionalLight(0xffffff,2);
+      d.position.set(5,10,7);
+      scene.add(d);
+      scene.add(new THREE.PointLight(0xa855f7,2,50,1));
+
+      const heartShape=new THREE.Shape();
+      heartShape.moveTo(5,5);
+      heartShape.bezierCurveTo(5,5,4,0,0,0);
+      heartShape.bezierCurveTo(-6,0,-6,7,-6,7);
+      heartShape.bezierCurveTo(-6,11,-3,15.4,5,19);
+      heartShape.bezierCurveTo(12,15.4,16,11,16,7);
+      heartShape.bezierCurveTo(16,7,16,0,10,0);
+      heartShape.bezierCurveTo(7,0,5,5,5,5);
+
+      const geo=new THREE.ExtrudeGeometry(heartShape,{depth:4,bevelEnabled:true,bevelThickness:1,bevelSize:1});
+      geo.center();
+      geo.rotateZ(Math.PI);
+      heartMesh=new THREE.Mesh(geo,new THREE.MeshPhysicalMaterial({color:0xffffff,metalness:0.2,roughness:0.1,transmission:0.1,clearcoat:1}));
+      heartMesh.scale.set(0.15,0.15,0.15);
+      scene.add(heartMesh);
+      animate();
+    }
+
+    function animate(){
+      requestAnimationFrame(animate);
+      if(heartMesh){
+        heartMesh.position.y=Math.sin(Date.now()*0.001)*0.5;
+      }
+      renderer.render(scene,camera);
+    }
+
+    // greeting popup cards
+    const cardsData = [
+      { top:"You gave", img:"images/pic2.webp", bottom:"refreshness in my life like.." },
+      { top:"My only", img:"images/pic3.webp", bottom:"is to be with you .." },
+      { top:"our relationship just like..", img:"images/pic4.webp", bottom:"" },
+      { top:"you are my..", img:"images/pic5.jpg", bottom:"Filled with magical moments and laughter." },
+      { top:"And I", img:"images/pic7.webp", bottom:"Around you." },
+      { top:"hey my ", img:"images/pic8.webp", bottom:"" },
+      { top:"To my fav human.", img:"images/me.jpg", bottom:"happy birthday." }
+    ];
+
+    let clickCount = 0;
+    let isAnimating = false;
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    function onTouchHeart(e){
+      if(isAnimating) return;
+      e.preventDefault();
+      const r = renderer.domElement.getBoundingClientRect();
+      const x = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const y = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+      pointer.x = ((x-r.left)/r.width)*2-1;
+      pointer.y = -((y-r.top)/r.height)*2+1;
+
+      raycaster.setFromCamera(pointer,camera);
+      const hits = raycaster.intersectObjects(scene.children);
+      if(hits.length){
+        showCard(hits[0].point.x<0?"left":"right");
+        document.getElementById("bg-music").play().catch(()=>{});
+      }
+    }
+
+    function showCard(side){
+      if(clickCount >= cardsData.length) {
+        document.getElementById("memories-section").scrollIntoView({behavior:"smooth"});
+        return;
+      }
+      const old = document.querySelector(".greeting-card");
+      if(old){
+        isAnimating = true;
+        old.classList.add("fade-out-down");
+        setTimeout(()=>{ old.remove(); spawn(side); isAnimating=false; },500);
+      } else {
+        spawn(side);
+      }
+    }
+
+    function spawn(side){
+      const d = cardsData[clickCount];
+      const c = document.createElement("div");
+      c.className = `greeting-card ${side}`;
+      c.innerHTML = `
+        <h3>${d.top}</h3>
+        <img src="${d.img}" alt="">
+        <p>${d.bottom}</p>
+      `;
+      container.appendChild(c);
+      clickCount++;
+    }
+
+    container.addEventListener("mousedown", onTouchHeart);
+    container.addEventListener("touchstart", onTouchHeart);
+
+    window.addEventListener("resize",()=>{
+      renderer.setSize(container.clientWidth,container.clientHeight);
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    initThree();
+  </script>
+  <script src="audio.js"></script>
+
+
+</body>
+</html>

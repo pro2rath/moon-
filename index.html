@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Chat</title>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<style>
+:root {
+  --bg:#111b21;
+  --hdr:#202c33;
+  --chat:#0b141a;
+  --sent:#005c4b;
+  --rcv:#202c33;
+  --txt:#e9edef;
+  --sub:#8696a0;
+  --acc:#00a884;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif;}
+html,body{height:100%;width:100%;overflow:hidden;position:fixed;background:var(--bg);touch-action:pan-y;}
+
+.phone-container{width:100%;height:100%;max-width:450px;margin:auto;background:var(--chat);display:flex;flex-direction:column;}
+
+header{background:var(--hdr);padding:10px 14px;display:flex;align-items:center;color:var(--txt);}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;margin-right:12px;}
+.user-info h4{font-size:16px;}
+#status-text{font-size:12px;color:var(--sub);}
+
+.chat-area{flex:1;padding:18px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;scrollbar-width:none;}
+.chat-area::-webkit-scrollbar{display:none;}
+
+.message{padding:8px 12px;border-radius:8px;font-size:14px;color:var(--txt);max-width:74%;animation:fadeIn .25s ease;}
+.sent{background:var(--sent);align-self:flex-end;border-top-right-radius:2px;}
+.received{background:var(--rcv);align-self:flex-start;border-top-left-radius:2px;}
+.timestamp{display:block;text-align:right;font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px;}
+
+.continue-link{display:block;margin-top:8px;padding:7px 12px;background:var(--acc);text-align:center;border-radius:18px;font-size:12px;text-decoration:none;color:#fff;}
+
+.input-area{background:var(--hdr);padding:10px;display:flex;align-items:center;}
+input{flex:1;padding:11px 14px;border-radius:20px;border:none;background:#2a3942;color:var(--txt);outline:none;}
+.send-btn-icon{width:40px;height:40px;border-radius:50%;border:none;background:var(--acc);margin-left:10px;color:#fff;font-size:18px;cursor:pointer;}
+.send-btn-icon:active{transform:scale(.88);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+
+<div class="phone-container">
+<header>
+  <div class="avatar">M</div>
+  <div class="user-info">
+    <h4>Loosu meow</h4>
+    <p id="status-text">online</p>
+  </div>
+</header>
+
+<div class="chat-area" id="chatArea">
+  <div class="message received">
+    Hey, type my name…
+    <span class="timestamp">12:00 PM</span>
+  </div>
+</div>
+
+<div class="input-area">
+  <input id="msgInput" type="text" placeholder="Message" autocomplete="off">
+  <button id="sendBtn" class="send-btn-icon">➤</button>
+</div>
+</div>
+
+<script src="audio.js"></script>
+
+<script>
+const NEXT_FILE_PATH = "cake.html";
+const chatArea = document.getElementById("chatArea");
+const input = document.getElementById("msgInput");
+const btn = document.getElementById("sendBtn");
+const status = document.getElementById("status-text");
+
+function time(){
+  const d=new Date();let h=d.getHours(),m=d.getMinutes();
+  const am=h>=12?"PM":"AM";h%=12;h=h?h:12;m=m<10?"0"+m:m;
+  return `${h}:${m} ${am}`;
+}
+
+function addMsg(t, type){
+  const div=document.createElement("div");
+  div.className="message "+type;
+  div.innerHTML=t+`<span class="timestamp">${time()}</span>`;
+  chatArea.appendChild(div);
+  chatArea.scrollTop=chatArea.scrollHeight;
+}
+
+btn.onclick =()=>{
+  const t=input.value.trim();
+  if(!t)return;
+  addMsg(t,"sent");
+  input.value="";
+  if(t.toLowerCase().includes("ambrin")) reply();
+}
+
+function reply(){
+  setTimeout(()=>status.innerText="typing…",400);
+  setTimeout(()=>{
+    addMsg(`
+Happy Birthday, girl who feels like the moon 🌙  
+You shine in your own way, calm and real.  
+Not loud, not fake — just enough to make nights brighter.
+
+I didn’t wait for your birthday to admire you,  
+but today gives me a reason to say it out loud.
+
+I hope your year glows like moonlight —  
+soft, strong, and always rising again.
+
+Stay exactly you. That’s more than enough.
+
+See you on the next screen 😌  
+
+<a href="${NEXT_FILE_PATH}" class="continue-link">Open ➡</a>
+    `,"received");
+    status.innerText="online";
+  },2200);
+}
+
+input.addEventListener("keypress",e=>{if(e.key==="Enter")btn.click();});
+</script>
+
+</body>
+</html>

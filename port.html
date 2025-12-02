@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Teleport</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* --- Cinematic HUD Container --- */
+        #hud {
+            position: absolute;
+            top: 55%; 
+            z-index: 10;
+            pointer-events: none;
+            transition: all 0.01s linear;
+            max-width: 80%;
+        }
+
+        .hud-left {
+            left: 8%;
+            right: auto;
+            text-align: left;
+            transform: translateY(-50%) perspective(600px) rotateY(15deg);
+        }
+
+        .hud-right {
+            right: 8%;
+            left: auto;
+            text-align: right;
+            transform: translateY(-50%) perspective(600px) rotateY(-15deg);
+        }
+
+        .message-container {
+            padding: 0;
+            opacity: 0;
+            filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .hud-left .message-container { transform: translateX(-80px); }
+        .hud-right .message-container { transform: translateX(80px); }
+
+        .message-container.visible {
+            opacity: 1;
+            filter: blur(0);
+            transform: translateX(0) !important;
+        }
+
+        #status-label {
+            display: inline-block;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+            padding: 2px 10px;
+        }
+
+        .hud-left #status-label { border-left: 3px solid #00f3ff; border-right: none; }
+        .hud-right #status-label { border-right: 3px solid #00f3ff; border-left: none; }
+
+        #main-message {
+            color: #ffffff;
+            font-size: 4rem;
+            font-weight: 900;
+            font-style: italic;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+            margin: 0;
+            line-height: 0.9;
+            white-space: nowrap;
+        }
+
+        #flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            transition: opacity 0.2s ease-out; /* Standard flash speed */
+        }
+        
+        /* The final big flash class */
+        #flash-overlay.final-flash {
+            transition: opacity 2s ease-in; /* Slow fade to white */
+            opacity: 1 !important;
+        }
+
+        @media (max-width: 768px) {
+            #hud { top: 70%; max-width: 90%; }
+            .hud-left { left: 5%; transform: translateY(-50%) perspective(400px) rotateY(5deg); }
+            .hud-right { right: 5%; transform: translateY(-50%) perspective(400px) rotateY(-5deg); }
+            #main-message { font-size: 2.2rem; white-space: normal; }
+            #status-label { font-size: 0.7rem; letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    <div id="flash-overlay"></div>
+
+    <div id="hud" class="hud-left">
+        <div class="message-container" id="msgContainer">
+            <span id="status-label">Travel Status</span>
+            <h1 id="main-message">INITIALIZING</h1>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION: Set the next page here
+        const NEXT_PAGE_URL = "space.html";
+
+        /**
+         * PART 1: THREE.JS 3D SCENE SETUP
+         */
+        
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.002); 
+
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // --- Texture Generators ---
+        function createCloudTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, 512, 512);
+
+            for(let i=0; i<30; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                const r = Math.random() * 200 + 50;
+                const colors = ['rgba(0, 243, 255, 0.1)', 'rgba(255, 0, 153, 0.1)', 'rgba(0, 255, 100, 0.1)', 'rgba(20, 0, 80, 0.2)'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                grad.addColorStop(0, color);
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.fillStyle = '#ffffff';
+            for(let i=0; i<200; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                const size = Math.random() * 1.5;
+                ctx.globalAlpha = Math.random();
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createDustTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(16, 16, 2, 16, 16, 16);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 32, 32);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // --- Geometry Creation ---
+        const points = [];
+        for (let i = 0; i < 50; i++) {
+            const t = i * 0.5;
+            points.push(new THREE.Vector3(Math.sin(t) * 10, Math.cos(t) * 10, i * 40));
+        }
+        const curve = new THREE.CatmullRomCurve3(points);
+        
+        const geometry = new THREE.TubeGeometry(curve, 100, 8, 16, false);
+        const cloudTexture = createCloudTexture();
+        const material = new THREE.MeshBasicMaterial({ 
+            map: cloudTexture,
+            side: THREE.BackSide,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const tube = new THREE.Mesh(geometry, material);
+        scene.add(tube);
+
+        // 15k Dust Particles
+        const dustCount = 15000;
+        const dustGeo = new THREE.BufferGeometry();
+        const dustPos = new Float32Array(dustCount * 3);
+        const dustTexture = createDustTexture();
+
+        for(let i=0; i<dustCount; i++) {
+            const t = Math.random();
+            const pointOnCurve = curve.getPointAt(t);
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * 7; 
+            
+            dustPos[i * 3] = pointOnCurve.x + (Math.random() - 0.5) * 15;
+            dustPos[i * 3 + 1] = pointOnCurve.y + (Math.random() - 0.5) * 15;
+            dustPos[i * 3 + 2] = pointOnCurve.z; 
+        }
+
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+        
+        const dustMat = new THREE.PointsMaterial({ 
+            color: 0xffffff, 
+            size: 0.25, 
+            map: dustTexture, 
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const dustSystem = new THREE.Points(dustGeo, dustMat);
+        scene.add(dustSystem);
+
+        // --- Animation Loop ---
+        let speed = 0.5;
+        let pos = 0;     
+        
+        function animate() {
+            requestAnimationFrame(animate);
+
+            cloudTexture.offset.x -= 0.005 * speed; 
+            cloudTexture.offset.y += 0.002 * speed;
+
+            pos += 0.0008 * speed; 
+            if (pos > 1) pos = 0;
+
+            const p1 = curve.getPointAt(pos % 1);
+            const p2 = curve.getPointAt((pos + 0.01) % 1);
+
+            camera.position.copy(p1);
+            camera.lookAt(p2);
+
+            tube.rotation.z += 0.005 * speed;
+            dustSystem.rotation.z -= 0.002 * speed;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        /**
+         * PART 2: LOGIC & HUD (5 Messages, 15 Seconds)
+         */
+
+        // Exact 5 messages as requested
+        const messages = [
+            { text: "365 days,", label: "one year." },         // 0s
+            { text: "8,760 hours , 525,600 minutes ", label: "small moments, big meaning." },       // 3s
+            { text: "Again a year 🌙✨", label: "like the moon 🌙✨" },    // 6s
+            { text: "21 years of Ambrin", label: "Today is" },       // 9s
+            { text: "Happy Birtday gurl", label: "surprice for you" } // 12s -> Flash at 15s
+        ];
+
+        const totalTime = 15; 
+        const messageIntervalTime = 3; // 5 messages * 3s = 15s
+
+        let currentTime = 0;
+        let msgIndex = -1;
+
+        const domMsgText = document.getElementById('main-message');
+        const domLabel = document.getElementById('status-label');
+        const domContainer = document.getElementById('msgContainer');
+        const domHud = document.getElementById('hud');
+        const domFlash = document.getElementById('flash-overlay');
+
+        const hudInterval = setInterval(() => {
+            currentTime += 0.1;
+
+            // Speed Control
+            if (currentTime > 3 && currentTime < 12) {
+                speed = 6.0; // Very fast
+            } else if (currentTime > 13) {
+                speed = 8.0; // Extreme speed before crash/flash
+            } else {
+                speed = 2.0;
+            }
+
+            // Message Logic
+            let currentBlock = Math.floor(currentTime / messageIntervalTime);
+            
+            if (currentBlock > msgIndex && currentBlock < messages.length) {
+                msgIndex = currentBlock;
+                updateMessage(messages[msgIndex]);
+            }
+
+            // End Sequence
+            if (currentTime >= totalTime) {
+                clearInterval(hudInterval);
+                finishWithFlash();
+            }
+
+        }, 100);
+
+        function updateMessage(msgData) {
+            // Small subtle flash for message change
+            domFlash.style.transition = "opacity 0.2s ease-out";
+            domFlash.style.opacity = 0.15;
+            setTimeout(() => domFlash.style.opacity = 0, 100);
+
+            domContainer.classList.remove('visible');
+
+            setTimeout(() => {
+                // Side Switching Logic
+                if (msgIndex % 2 === 0) {
+                    domHud.classList.remove('hud-right');
+                    domHud.classList.add('hud-left');
+                } else {
+                    domHud.classList.remove('hud-left');
+                    domHud.classList.add('hud-right');
+                }
+
+                domMsgText.innerText = msgData.text;
+                domLabel.innerText = msgData.label;
+                
+                // Colors
+                let accentColor = "#00f3ff"; 
+                if (msgIndex === 2) accentColor = "#ff0099"; 
+                if (msgIndex === 4) accentColor = "#ff3333"; // Red warning before arrival
+
+                domMsgText.style.color = accentColor;
+                
+                if (domHud.classList.contains('hud-left')) {
+                    domLabel.style.borderLeftColor = accentColor;
+                    domLabel.style.borderRightColor = "transparent";
+                } else {
+                    domLabel.style.borderRightColor = accentColor;
+                    domLabel.style.borderLeftColor = "transparent";
+                }
+
+                requestAnimationFrame(() => {
+                    domContainer.classList.add('visible');
+                });
+            }, 200);
+        }
+
+        function finishWithFlash() {
+            // 1. Hide the HUD so it doesn't float over the white screen
+            domHud.style.display = 'none';
+            
+            // 2. Trigger the massive white flash (CSS takes 2 seconds)
+            domFlash.classList.add('final-flash');
+            
+            // 3. WAIT 2 seconds for the screen to turn fully white, THEN redirect
+            setTimeout(() => {
+                window.location.href = NEXT_PAGE_URL;
+            }, 2000); 
+        }
+
+        // Start initial message immediately
+        setTimeout(() => {
+            msgIndex = 0;
+            updateMessage(messages[0]);
+        }, 100);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+    </script>
+    <script src="audio.js"></script>
+</body>
+</html>

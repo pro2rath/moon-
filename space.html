@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday - Cosmic Cinematic</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Montserrat', sans-serif; }
+        canvas { display: block; outline: none; }
+        
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 2.0s ease-out;
+            pointer-events: none;
+        }
+        .loader-text {
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 5px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+
+        /* --- UI LAYER --- */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+            display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+            padding: 40px 0; box-sizing: border-box;
+        }
+
+        .handwritten-text {
+            font-family: 'Great Vibes', cursive; color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            opacity: 0; transition: opacity 1.5s ease-out;
+            text-align: center;
+        }
+
+        #hb-text { font-size: 4rem; margin-top: 5vh; 
+            background: linear-gradient(90deg, #fff 0%, #ddd 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        #name-text { font-size: 5rem; margin-bottom: 10vh; color: #ffddaa; }
+
+        .visible { opacity: 1 !important; }
+        .hidden { opacity: 0 !important; transition: opacity 1s ease; }
+
+        /* MODAL & BUTTONS */
+        #message-modal {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; pointer-events: auto; opacity: 0; transition: opacity 1s ease;
+            z-index: 50; display: none;
+            width: 90%; max-width: 400px;
+        }
+        .glass-panel {
+            background: rgba(25, 25, 40, 0.6); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px 40px; border-radius: 20px; color: #eee;
+        }
+        .glass-panel h2 {
+            font-size: 1.5rem; line-height: 1.4; margin-bottom: 20px;
+        }
+        .magic-btn {
+            background: linear-gradient(135deg, #6677ff, #ff88aa); border: none; padding: 12px 30px;
+            color: white; border-radius: 30px; font-size: 1rem; cursor: pointer;
+            font-family: 'Montserrat', sans-serif; font-weight: 600; text-transform: uppercase;
+            margin-top: 20px;
+            white-space: nowrap;
+        }
+        
+        /* MIRROR MESSAGE */
+        #mirror-msg {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: 1.5rem;
+            letter-spacing: 2px; text-align: center; width: 90%;
+            opacity: 0; transition: opacity 1s ease; z-index: 40; pointer-events: none;
+        }
+
+        /* FINAL BUTTON CONTAINER */
+        #final-btn-container {
+            position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+            z-index: 60; opacity: 0; pointer-events: none; transition: opacity 1s;
+        }
+        .final-btn-active { pointer-events: auto !important; opacity: 1 !important; }
+
+        /* --- MOBILE RESPONSIVE STYLES --- */
+        @media (max-width: 768px) {
+            #hb-text { font-size: 2.8rem; margin-top: 8vh; }
+            #name-text { font-size: 3.5rem; margin-bottom: 15vh; }
+            
+            #mirror-msg { font-size: 1.1rem; letter-spacing: 1px; width: 85%; }
+            
+            .glass-panel { padding: 25px 20px; }
+            .glass-panel h2 { font-size: 1.2rem; }
+            
+            .magic-btn { font-size: 0.9rem; padding: 10px 25px; }
+            
+            /* Ensure button isn't too close to edge on small screens */
+            #final-btn-container { bottom: 12%; }
+        }
+
+        @media (max-height: 600px) {
+            /* Landscape Mobile adjustments */
+            #hb-text { font-size: 2.5rem; margin-top: 20px; }
+            #name-text { font-size: 3rem; margin-bottom: 20px; }
+            #final-btn-container { bottom: 20px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- LOADING SCREEN -->
+    <div id="splash-screen">
+        <div class="loader-text">Loading the Universe...</div>
+    </div>
+
+    <!-- UI LAYER -->
+    <div id="ui-layer">
+        <div id="hb-text" class="handwritten-text">Happy Birthday</div>
+        <div id="name-text" class="handwritten-text">Ambrin</div>
+    </div>
+
+    <!-- FIRST BUTTON MODAL -->
+    <div id="message-modal">
+        <div class="glass-panel">
+            <h2>The moon is jealous of u,<br>u wanna moon back?</h2>
+            <button class="magic-btn" onclick="triggerSequence()">Bring it Back</button>
+        </div>
+    </div>
+
+    <!-- MIRROR MESSAGE -->
+    <div id="mirror-msg">Go to mirror then see the truth</div>
+
+    <!-- GO TO FINAL BUTTON -->
+    <div id="final-btn-container">
+        <!-- Links to final.html -->
+        <button class="magic-btn" onclick="window.location.href='final.html'">Go to Final ❤️</button>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Audio Manager -->
+    <script src="audio.js"></script>
+    
+    <script>
+        // --- CONFIG ---
+        const CONFIG = {
+            transformTime: 15.0, 
+            moonRadius: 10,
+            particleCount: 15000, 
+            cameraZ: 75,
+            defaultTexture: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg',
+            nameToRender: "Ambrin",
+            finalMessage: "You are the moon"
+        };
+
+        const STATE = { 
+            ORBIT: 0, 
+            EXPLODING: 1, 
+            WAITING: 2, 
+            REASSEMBLING_NAME: 3,
+            HOLDING_NAME: 4,
+            DISPERSING: 5,
+            MIRROR_PHASE: 6,
+            REASSEMBLING_FINAL: 7
+        };
+        let currentState = STATE.ORBIT;
+        let stateTimer = 0;
+
+        let scene, camera, renderer, clock, controls;
+        let moonMesh;
+        let particleSystem;
+        let particleAttributes = { 
+            positions: null, 
+            velocities: null, 
+            targetName: null, 
+            targetFinal: null,
+            currentTargets: null
+        };
+        let isDragging = false;
+        let hbTriggered = false, nameTriggered = false;
+
+        window.onload = init;
+
+        function init() {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = 0;
+                setTimeout(() => splash.style.display = 'none', 1500);
+            }, 2000);
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000); 
+            scene.fog = new THREE.FogExp2(0x000000, 0.0001); 
+
+            // Camera setup - initial aspect ratio fix
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 10000);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.enablePan = false;
+            controls.enableZoom = false; 
+            controls.minAzimuthAngle = -Math.PI / 2; 
+            controls.maxAzimuthAngle = Math.PI / 2;
+            controls.minPolarAngle = Math.PI/2 - 0.5; controls.maxPolarAngle = Math.PI/2 + 0.5;
+            
+            controls.addEventListener('start', () => { isDragging = true; });
+            controls.addEventListener('end', () => { isDragging = false; });
+
+            clock = new THREE.Clock();
+
+            // Lighting
+            scene.add(new THREE.AmbientLight(0x444444, 0.8));
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            sunLight.position.set(100, 50, 100);
+            scene.add(sunLight);
+
+            createDeepStarfield();
+            createMoon(CONFIG.defaultTexture);
+
+            // Call onResize immediately to set correct camera distance for mobile
+            onResize();
+            window.addEventListener('resize', onResize);
+
+            animate();
+        }
+
+        // --- GENERATORS ---
+
+        function getCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');     
+            grad.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)'); 
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)'); 
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');           
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 32, 32);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function generateTextTargets(text, fontSize) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 256; 
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000'; ctx.fillRect(0,0,1024,256);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${fontSize}px "Segoe UI", sans-serif`; 
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, 512, 128);
+
+            const data = ctx.getImageData(0,0,1024,256).data;
+            const validPoints = [];
+            for(let y=0; y<256; y+=4) { 
+                for(let x=0; x<1024; x+=4) {
+                    if(data[(y*1024 + x)*4] > 128) {
+                        validPoints.push({
+                            x: (x - 512) * 0.08, 
+                            y: -(y - 128) * 0.08
+                        });
+                    }
+                }
+            }
+            return validPoints;
+        }
+
+        function createDeepStarfield() {
+            const starTexture = getCircleTexture();
+            const dustGeo = new THREE.BufferGeometry();
+            const dustPos = [];
+            for(let i=0; i<10000; i++) {
+                const r = 500 + Math.random() * 1000;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                dustPos.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+            }
+            dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(dustPos, 3));
+            const dustMat = new THREE.PointsMaterial({ color: 0x556677, size: 0.8, map: starTexture, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending });
+            scene.add(new THREE.Points(dustGeo, dustMat));
+
+            const midGeo = new THREE.BufferGeometry();
+            const midPos = [];
+            const midCols = [];
+            for(let i=0; i<4000; i++) {
+                const r = 200 + Math.random() * 600;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                midPos.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+                const c = new THREE.Color();
+                const rand = Math.random();
+                if(rand > 0.9) c.setHex(0xaaddff); 
+                else if(rand > 0.95) c.setHex(0xffddaa); 
+                else c.setHex(0xffffff); 
+                midCols.push(c.r, c.g, c.b);
+            }
+            midGeo.setAttribute('position', new THREE.Float32BufferAttribute(midPos, 3));
+            midGeo.setAttribute('color', new THREE.Float32BufferAttribute(midCols, 3));
+            const midMat = new THREE.PointsMaterial({ size: 1.5, vertexColors: true, map: starTexture, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending });
+            scene.add(new THREE.Points(midGeo, midMat));
+
+            const foreGeo = new THREE.BufferGeometry();
+            const forePos = [];
+            for(let i=0; i<500; i++) {
+                const r = 100 + Math.random() * 200;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                forePos.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+            }
+            foreGeo.setAttribute('position', new THREE.Float32BufferAttribute(forePos, 3));
+            const foreMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2.5, map: starTexture, transparent: true, opacity: 1.0, depthWrite: false, blending: THREE.AdditiveBlending });
+            scene.add(new THREE.Points(foreGeo, foreMat));
+        }
+
+        function createMoon(url) {
+            if(moonMesh) { scene.remove(moonMesh); moonMesh.geometry.dispose(); moonMesh.material.dispose(); }
+            const loader = new THREE.TextureLoader();
+            loader.crossOrigin = '';
+            loader.load(url, (tex) => {
+                const geo = new THREE.SphereGeometry(CONFIG.moonRadius, 64, 64);
+                const mat = new THREE.MeshStandardMaterial({
+                    map: tex, roughness: 0.8, metalness: 0.1,
+                    emissive: 0x222222, emissiveMap: tex, emissiveIntensity: 0.2
+                });
+                moonMesh = new THREE.Mesh(geo, mat);
+                moonMesh.rotation.y = -Math.PI/2;
+                scene.add(moonMesh);
+            });
+        }
+
+        function triggerExplosion() {
+            currentState = STATE.EXPLODING;
+            if(moonMesh) moonMesh.visible = false;
+            document.getElementById('hb-text').classList.add('hidden');
+            document.getElementById('name-text').classList.add('hidden');
+            createParticleSystem();
+            setTimeout(() => {
+                currentState = STATE.WAITING;
+                const modal = document.getElementById('message-modal');
+                modal.style.display = 'block';
+                void modal.offsetWidth;
+                modal.style.opacity = 1;
+            }, 3000);
+        }
+
+        function createParticleSystem() {
+            const count = CONFIG.particleCount;
+            const geo = new THREE.BufferGeometry();
+            const posArray = new Float32Array(count * 3);
+            const velArray = [];
+            const cols = [];
+            
+            // Text Targets
+            const namePoints = generateTextTargets(CONFIG.nameToRender, 100);
+            const finalPoints = generateTextTargets(CONFIG.finalMessage, 60);
+
+            const targetNameArr = new Float32Array(count * 3);
+            const targetFinalArr = new Float32Array(count * 3);
+
+            const palette = [new THREE.Color(0xffffff), new THREE.Color(0xaaddff), new THREE.Color(0x8899ff)];
+
+            for(let i=0; i<count; i++) {
+                const r = CONFIG.moonRadius;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.sin(phi) * Math.sin(theta);
+                const z = r * Math.cos(phi);
+
+                posArray[i*3] = x; posArray[i*3+1] = y; posArray[i*3+2] = z;
+
+                const speed = 0.1 + Math.random() * 0.5;
+                const v = new THREE.Vector3(x, y, z).normalize().multiplyScalar(speed);
+                velArray.push(v.x, v.y, v.z);
+
+                const c = palette[Math.floor(Math.random() * palette.length)];
+                cols.push(c.r, c.g, c.b);
+
+                // Target 1: Name "Ambrin"
+                if (namePoints.length > 0) {
+                    const pt = namePoints[i % namePoints.length];
+                    const jitter = 0.1;
+                    targetNameArr[i*3] = pt.x + (Math.random()-0.5)*jitter;
+                    targetNameArr[i*3+1] = pt.y + (Math.random()-0.5)*jitter;
+                    targetNameArr[i*3+2] = (Math.random()-0.5)*2;
+                } else {
+                    targetNameArr[i*3] = x; targetNameArr[i*3+1] = y; targetNameArr[i*3+2] = z;
+                }
+
+                // Target 2: Final Message "You are the moon" (Particles)
+                if (finalPoints.length > 0) {
+                    const pt = finalPoints[i % finalPoints.length];
+                    const jitter = 0.1;
+                    targetFinalArr[i*3] = pt.x + (Math.random()-0.5)*jitter;
+                    targetFinalArr[i*3+1] = pt.y + (Math.random()-0.5)*jitter;
+                    targetFinalArr[i*3+2] = (Math.random()-0.5)*2;
+                } else {
+                    targetFinalArr[i*3] = x*2; targetFinalArr[i*3+1] = y*2; targetFinalArr[i*3+2] = z*2;
+                }
+            }
+
+            geo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+            
+            const mat = new THREE.PointsMaterial({ 
+                size: 0.6, vertexColors: true, transparent: true, opacity: 0.9,
+                map: getCircleTexture(), blending: THREE.AdditiveBlending, depthWrite: false
+            });
+
+            particleSystem = new THREE.Points(geo, mat);
+            scene.add(particleSystem);
+
+            particleAttributes.positions = posArray;
+            particleAttributes.velocities = velArray;
+            particleAttributes.targetName = targetNameArr;
+            particleAttributes.targetFinal = targetFinalArr;
+        }
+
+        window.triggerSequence = function() {
+            const modal = document.getElementById('message-modal');
+            modal.style.opacity = 0;
+            setTimeout(() => modal.style.display = 'none', 1000);
+            currentState = STATE.REASSEMBLING_NAME;
+            particleAttributes.currentTargets = particleAttributes.targetName;
+        };
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            controls.update(); 
+
+            // SMART AUTO-CENTER: Only auto-center if not interactive states
+            if (!isDragging && currentState !== STATE.REASSEMBLING_FINAL && currentState !== STATE.REASSEMBLING_NAME) {
+                // Smoothly return camera to center (but respect the current Z distance!)
+                const targetZ = camera.position.z; 
+                camera.position.x += (0 - camera.position.x) * 0.05;
+                camera.position.y += (0 - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+            }
+
+            if (currentState === STATE.ORBIT) {
+                if (time > 3.5 && !hbTriggered) { 
+                    document.getElementById('hb-text').classList.add('visible'); 
+                    hbTriggered = true; 
+                }
+                if (time > 5.5 && !nameTriggered) { 
+                    document.getElementById('name-text').classList.add('visible'); 
+                    nameTriggered = true; 
+                }
+                if(time >= CONFIG.transformTime) {
+                    triggerExplosion();
+                }
+                if(moonMesh) moonMesh.rotation.y += 0.002;
+            }
+            else if (currentState === STATE.EXPLODING || currentState === STATE.WAITING || currentState === STATE.DISPERSING) {
+                if(particleSystem) {
+                    const positions = particleSystem.geometry.attributes.position.array;
+                    const vels = particleAttributes.velocities;
+                    for(let i=0; i<CONFIG.particleCount; i++) {
+                        const i3 = i*3;
+                        positions[i3] += vels[i3]; positions[i3+1] += vels[i3+1]; positions[i3+2] += vels[i3+2];
+                        vels[i3] *= 0.98; vels[i3+1] *= 0.98; vels[i3+2] *= 0.98; 
+                    }
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                }
+                
+                // Logic for Transition to Mirror Phase
+                if(currentState === STATE.DISPERSING) {
+                    if(clock.getElapsedTime() - stateTimer > 2.0) {
+                        currentState = STATE.MIRROR_PHASE;
+                        stateTimer = clock.getElapsedTime();
+                        // Show "Go to mirror" text
+                        document.getElementById('mirror-msg').style.opacity = 1;
+                    }
+                }
+            }
+            else if (currentState === STATE.MIRROR_PHASE) {
+                // Ensure particles drift slightly so it's not frozen
+                if(particleSystem) {
+                    const positions = particleSystem.geometry.attributes.position.array;
+                    for(let i=0; i<CONFIG.particleCount; i++) {
+                        const i3 = i*3;
+                        positions[i3] += (Math.random()-0.5)*0.05;
+                        positions[i3+1] += (Math.random()-0.5)*0.05;
+                        positions[i3+2] += (Math.random()-0.5)*0.05;
+                    }
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                }
+
+                // Wait 3 seconds
+                if(clock.getElapsedTime() - stateTimer > 3.0) {
+                    // Fade out mirror msg
+                    document.getElementById('mirror-msg').style.opacity = 0;
+                    
+                    // Switch to "You are the moon" particle reassemble
+                    currentState = STATE.REASSEMBLING_FINAL;
+                    particleAttributes.currentTargets = particleAttributes.targetFinal;
+                    
+                    // Show Final Button after short delay
+                    setTimeout(() => {
+                        document.getElementById('final-btn-container').classList.add('final-btn-active');
+                    }, 2000);
+                }
+            }
+            else if (currentState === STATE.REASSEMBLING_NAME) {
+                performAssembly(0.05); 
+                if(!stateTimer) stateTimer = clock.getElapsedTime();
+                if(clock.getElapsedTime() - stateTimer > 3.0) {
+                    currentState = STATE.HOLDING_NAME;
+                    stateTimer = clock.getElapsedTime();
+                }
+            }
+            else if (currentState === STATE.HOLDING_NAME) {
+                performAssembly(0.01);
+                if(clock.getElapsedTime() - stateTimer > 2.0) {
+                    currentState = STATE.DISPERSING;
+                    stateTimer = clock.getElapsedTime();
+                    
+                    const vels = particleAttributes.velocities;
+                    for(let i=0; i<CONFIG.particleCount; i++) {
+                        const i3 = i*3;
+                        const x = particleAttributes.positions[i3];
+                        const y = particleAttributes.positions[i3+1];
+                        const z = particleAttributes.positions[i3+2];
+                        const v = new THREE.Vector3(x, y, z).normalize().multiplyScalar(0.2 + Math.random()*0.3);
+                        vels[i3] = v.x; vels[i3+1] = v.y; vels[i3+2] = v.z;
+                    }
+                }
+            }
+            else if (currentState === STATE.REASSEMBLING_FINAL) {
+                performAssembly(0.04);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function performAssembly(speed) {
+            if(!particleSystem) return;
+            const positions = particleSystem.geometry.attributes.position.array;
+            const targets = particleAttributes.currentTargets;
+            
+            particleSystem.rotation.y *= 0.9;
+
+            for(let i=0; i<CONFIG.particleCount; i++) {
+                const i3 = i*3;
+                positions[i3] += (targets[i3] - positions[i3]) * speed;
+                positions[i3+1] += (targets[i3+1] - positions[i3+1]) * speed;
+                positions[i3+2] += (targets[i3+2] - positions[i3+2]) * speed;
+                
+                positions[i3] += (Math.random()-0.5)*0.02;
+                positions[i3+1] += (Math.random()-0.5)*0.02;
+            }
+            particleSystem.geometry.attributes.position.needsUpdate = true;
+        }
+
+        function onResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            
+            // SMART CAMERA DISTANCE ADJUSTMENT FOR MOBILE
+            const isMobile = window.innerWidth < 768; // Simple breakpoint
+            const aspect = window.innerWidth / window.innerHeight;
+            
+            // If aspect ratio is narrow (portrait), move camera back to keep moon in view
+            if (aspect < 1.0) {
+                // Calculate distance based on FOV to maintain roughly same visible width
+                // Standard Z is 75. 
+                // We want to scale Z inversely to aspect ratio roughly.
+                const newZ = CONFIG.cameraZ / aspect * 0.8; 
+                camera.position.z = Math.min(newZ, 200); // Cap it so it doesn't go too far
+            } else {
+                camera.position.z = CONFIG.cameraZ;
+            }
+        }
+    </script>
+</body>
+</html>
