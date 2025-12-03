@@ -52,9 +52,9 @@ input{flex:1;padding:11px 14px;border-radius:20px;border:none;background:#2a3942
 
 <div class="phone-container">
 <header>
-  <div class="avatar">A</div>
+  <div class="avatar">M</div>
   <div class="user-info">
-    <h4>Ambrin</h4>
+    <h4>Loosu meow</h4>
     <p id="status-text">online</p>
   </div>
 </header>
@@ -87,7 +87,7 @@ function time(){
   return `${h}:${m} ${am}`;
 }
 
-function addMsg(t,type){
+function addMsg(t, type){
   const div=document.createElement("div");
   div.className="message "+type;
   div.innerHTML=t+`<span class="timestamp">${time()}</span>`;
@@ -95,44 +95,13 @@ function addMsg(t,type){
   chatArea.scrollTop=chatArea.scrollHeight;
 }
 
-// ✅ ONLY CHANGE: Same send button now plays song too (dual role)
 btn.onclick =()=>{
   const t=input.value.trim();
   if(!t)return;
   addMsg(t,"sent");
   input.value="";
-
-  // start shared music when ➤ is pressed
-  const music=document.getElementById("bg-music");
-  if(music){
-      music.muted=false;
-      music.play().catch(()=>console.log("Music blocked – click again"));
-  }
-
   if(t.toLowerCase().includes("ambrin")) reply();
 }
-
-btn.onclick = () => {
-    const text = input.value.trim();
-    if(!text) return;
-
-    addMessage(text, "sent");
-    input.value = "";
-
-    if(music) {
-        music.muted = false;
-        music.volume = 0.6;
-        music.play().catch(() => {
-            music.muted = true;
-            music.play().then(() => {
-                document.body.addEventListener('click', () => {
-                    music.muted = false;
-                    music.play();
-                }, { once:true });
-            });
-        });
-    }
-};
 
 function reply(){
   setTimeout(()=>status.innerText="typing…",400);
@@ -161,9 +130,5 @@ See you on the next screen 😌
 input.addEventListener("keypress",e=>{if(e.key==="Enter")btn.click();});
 </script>
 
-<!-- ✅ ONLY CHANGE: Song path fixed (repo local path) -->
-<audio id="bg-music" src="songs/perfect.mp3" loop style="display:none"></audio>
-
 </body>
 </html>
-
