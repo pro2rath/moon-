@@ -112,6 +112,28 @@ btn.onclick =()=>{
   if(t.toLowerCase().includes("ambrin")) reply();
 }
 
+btn.onclick = () => {
+    const text = input.value.trim();
+    if(!text) return;
+
+    addMessage(text, "sent");
+    input.value = "";
+
+    if(music) {
+        music.muted = false;
+        music.volume = 0.6;
+        music.play().catch(() => {
+            music.muted = true;
+            music.play().then(() => {
+                document.body.addEventListener('click', () => {
+                    music.muted = false;
+                    music.play();
+                }, { once:true });
+            });
+        });
+    }
+};
+
 function reply(){
   setTimeout(()=>status.innerText="typing…",400);
   setTimeout(()=>{
@@ -144,3 +166,4 @@ input.addEventListener("keypress",e=>{if(e.key==="Enter")btn.click();});
 
 </body>
 </html>
+
